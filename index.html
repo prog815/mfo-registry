@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Государственный реестр МФО — справочник</title>
+<meta name="description" content="Справочный снимок государственного реестра микрофинансовых организаций Банка России. Проверка перед займом: поиск по названию, ИНН, ОГРН, регистрационному номеру и домену сайта.">
+<link rel="canonical" href="https://prog815.github.io/mfo-registry/">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Экосистема «Классик»">
+<meta property="og:title" content="Государственный реестр МФО — справочник">
+<meta property="og:description" content="Проверка микрофинансовых компаний и микрокредитных компаний по реестру Банка России. Поиск по домену, ИНН, ОГРН.">
+<meta property="og:url" content="https://prog815.github.io/mfo-registry/">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Государственный реестр МФО — справочник">
+<meta name="twitter:description" content="Проверка МФО по реестру Банка России. Поиск по домену, ИНН, ОГРН.">
+<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1120" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="https://prog815.github.io/favicon.svg?v=1.0.0" type="image/svg+xml">
+<link rel="apple-touch-icon" href="https://prog815.github.io/favicon.svg?v=1.0.0">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Dataset","name":"Государственный реестр микрофинансовых организаций","description":"Справочный снимок реестра МФО Банка России.","url":"https://prog815.github.io/mfo-registry/","inLanguage":"ru","creator":{"@type":"Person","name":"Алексей Енин","sameAs":["https://m.vk.ru/alekseyenin","https://t.me/AlekseyEnin"]},"distribution":{"@type":"DataDownload","encodingFormat":"application/gzip","contentUrl":"https://prog815.github.io/mfo-registry/mfo.json.gz"}}
+</script>
+<script src="https://prog815.github.io/share.js?v=1.0.3" defer></script>
+<style>
+:root{
+  --bg:#f5f7fb;--bg-blur:rgba(245,247,251,.85);--card:#fff;--chip:#f1f5f9;
+  --text:#0f172a;--muted:#5b6b7f;--border:#e2e8f0;
+  --accent:#2563eb;--accent-soft:#eff6ff;--accent-ring:rgba(37,99,235,.25);--accent-2:#7c3aed;
+  --ok:#16a34a;--ok-soft:#f0fdf4;--bad:#dc2626;--bad-soft:#fef2f2;--warn:#b45309;
+  --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);--radius:16px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0b1120;--bg-blur:rgba(11,17,32,.85);--card:#111a2c;--chip:rgba(148,163,184,.12);
+  --text:#e6edf7;--muted:#94a3b8;--border:#1e293b;--accent:#60a5fa;--accent-soft:rgba(96,165,250,.12);
+  --accent-ring:rgba(96,165,250,.35);--accent-2:#a78bfa;
+  --ok:#4ade80;--ok-soft:rgba(74,222,128,.12);--bad:#f87171;--bad-soft:rgba(248,113,113,.12);--warn:#fbbf24;
+}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.5}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px}
+.klassik-banner{display:block;text-align:center;padding:14px 0 6px}
+.klassik-banner img{max-width:100%;height:auto;border-radius:10px}
+h1{font-size:clamp(24px,4.5vw,34px);margin:.4em 0 .2em}
+.lead{color:var(--muted);margin:0 0 18px;font-size:15px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.search{flex:1 1 260px;position:relative}
+.search input{width:100%;padding:11px 38px 11px 14px;font-size:15px;border:1px solid var(--border);
+  border-radius:12px;background:var(--card);color:var(--text);outline:none}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring)}
+.search .x{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;
+  color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:8px}
+.search .x:hover{color:var(--text);background:var(--chip)}
+select{padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:12px;
+  background:var(--card);color:var(--text);cursor:pointer}
+.statusline{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  color:var(--muted);font-size:13px;margin:6px 2px 14px;flex-wrap:wrap}
+.statusline a{color:var(--accent);cursor:pointer;text-decoration:none}
+.statusline a:hover{text-decoration:underline}
+.spinner{text-align:center;padding:48px 0;color:var(--muted)}
+.spinner .ph{font-size:13px;margin-top:8px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent);
+  animation:pd 1s infinite}
+@keyframes pd{0%,100%{opacity:.2}50%{opacity:1}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px}
+.card.highlight{outline:2px solid var(--accent);outline-offset:2px}
+.card__top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;
+  background:var(--chip);border:1px solid var(--border);border-radius:8px;padding:3px 8px;
+  cursor:pointer;color:var(--text)}
+.code:hover{border-color:var(--accent);color:var(--accent)}
+.badge{font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px}
+.badge--mfk{background:var(--accent-soft);color:var(--accent)}
+.badge--mkk{background:rgba(124,58,237,.12);color:var(--accent-2)}
+.badge--ok{background:var(--ok-soft);color:var(--ok)}
+.badge--bad{background:var(--bad-soft);color:var(--bad)}
+.card h3{margin:0 0 6px;font-size:16px}
+.card h3 .short{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:2px}
+.rows{font-size:14px;color:var(--muted)}
+.rows b{color:var(--text);font-weight:600}
+.rows .row{margin:3px 0;word-break:break-word}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{font-size:12px;background:var(--chip);border:1px solid var(--border);border-radius:8px;
+  padding:2px 8px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.chip a{color:var(--accent);text-decoration:none}
+.chip a:hover{text-decoration:underline}
+.note-excl{font-size:12.5px;color:var(--muted);background:var(--bad-soft);
+  border:1px solid var(--border);border-radius:10px;padding:6px 10px;margin-top:8px}
+.card__actions{margin-top:10px}
+mark{background:rgba(250,204,21,.45);color:inherit;border-radius:3px;padding:0 1px}
+@media (prefers-color-scheme:dark){mark{background:rgba(250,204,21,.28)}}
+.more{display:block;margin:14px auto 30px;padding:10px 22px;font-size:14px;border:1px solid var(--border);
+  border-radius:12px;background:var(--card);color:var(--accent);cursor:pointer}
+.more:hover{border-color:var(--accent)}
+.empty{text-align:center;color:var(--muted);padding:40px 0;font-size:15px}
+footer{border-top:1px solid var(--border);margin-top:30px;padding:22px 0 30px;font-size:13px;color:var(--muted)}
+footer .fr{margin:6px 0}
+footer a{color:var(--accent);text-decoration:none}
+footer a:hover{text-decoration:underline}
+footer .disc{margin-top:10px;font-size:12px}
+.fab{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:5}
+.fab button{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--card);
+  color:var(--muted);font-size:16px;cursor:pointer;box-shadow:var(--shadow)}
+.fab button:hover{color:var(--accent);border-color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);
+  background:var(--text);color:var(--bg);padding:9px 18px;border-radius:10px;font-size:13px;
+  opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:640px){.controls{flex-direction:column}select{width:100%}}
+</style>
+</head>
+<body>
+<a class="klassik-banner" href="https://prog815.github.io/" aria-label="Экосистема «Классик» — все справочники">
+  <img src="https://prog815.github.io/banner.svg?v=1.0.0" alt="Экосистема «Классик» — все справочники" width="1200" height="64">
+</a>
+<div class="wrap">
+  <h1>Государственный реестр МФО</h1>
+  <p class="lead">Справочный снимок официального реестра Банка России о микрофинансовых и микрокредитных компаниях. Перед оформлением займа проверьте, числится ли компания в реестре и совпадает ли адрес сайта с указанным в реестре.</p>
+
+  <div class="controls">
+    <div class="search">
+      <input id="q" type="search" placeholder="Название, ИНН, ОГРН, рег. номер или домен сайта…" autocomplete="off" aria-label="Поиск по реестру">
+      <button class="x" id="qx" type="button" aria-label="Очистить поиск" hidden>✕</button>
+    </div>
+    <select id="ftype" aria-label="Вид организации">
+      <option value="">Все виды</option>
+      <option value="МФК">МФК</option>
+      <option value="МКК">МКК</option>
+    </select>
+    <select id="fstatus" aria-label="Статус">
+      <option value="Действующая" selected>Действующие</option>
+      <option value="Исключённая">Исключённые</option>
+      <option value="">Все статусы</option>
+    </select>
+  </div>
+
+  <div class="statusline">
+    <span id="stat">Загрузка…</span>
+    <a id="clear" hidden>Очистить</a>
+  </div>
+
+  <div class="spinner" id="spinner">
+    <span class="dot"></span>
+    <div class="ph" id="phase">Загрузка реестра МФО…</div>
+    <div class="ph">Файл ~770 КБ. Обычно менее секунды.</div>
+  </div>
+
+  <div id="results"></div>
+  <div class="empty" id="empty" hidden></div>
+  <button class="more" id="more" hidden>Показать ещё</button>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="fr"><b>Справочный снимок государственного реестра МФО.</b> Данные обновляются ежедневно. Дата актуальности выгрузки: <span id="adate">…</span>.</div>
+    <div class="fr">Источник данных (машиночитаемый снимок):
+      <a href="https://www.cbr.ru/vfs/finmarkets/files/supervision/list_mfo.xlsx" target="_blank" rel="noopener">Банк России — Государственный реестр МФО (Excel)</a>
+    </div>
+    <div class="fr">Первоисточники для сверки:
+      <a href="https://www.cbr.ru/microfinance/registry/" target="_blank" rel="noopener">Официальный сайт Банка России</a>
+      · <a href="https://github.com/prog815/mfo-registry#readme" target="_blank" rel="noopener">О справочнике</a>
+    </div>
+    <div class="fr">Экосистема проектов:
+      <a href="https://prog815.github.io/">Центральный хаб «Классик»</a>
+    </div>
+    <div class="fr">Обсуждение и обратная связь:
+      <a href="https://m.vk.ru/alekseyenin" rel="me noopener" target="_blank">ВКонтакте</a> ·
+      <a href="https://t.me/AlekseyEnin" rel="me noopener" target="_blank">Telegram</a> ·
+      <a href="https://max.ru/channel_prog815" rel="me noopener" target="_blank">MAX</a> ·
+      <a href="https://www.linkedin.com/in/eavprog/" rel="me noopener" target="_blank">LinkedIn</a>
+    </div>
+    <div class="fr disc">Данные предоставляются как есть, на дату снимка. Отсутствие организации в выгрузке не подтверждает её исключение из реестра. Не заменяет официальные публикации Банка России.</div>
+  </div>
+</footer>
+
+<div class="fab">
+  <button id="up" type="button" aria-label="К предыдущей карточке">↑</button>
+  <button id="dn" type="button" aria-label="К следующей карточке">↓</button>
+</div>
+<div class="toast" id="toast">Скопировано</div>
+
+<script>
+(function(){
+"use strict";
+const PAGE=20;
+let DATA=[],META=null,ACT='—',shown=PAGE,deepCode='';
+const $=id=>document.getElementById(id);
+const q=$('q'),ftype=$('ftype'),fstatus=$('fstatus'),results=$('results'),
+      stat=$('stat'),more=$('more'),empty=$('empty'),clear=$('clear'),qx=$('qx');
+
+/* ── загрузка .json.gz ── */
+async function loadGz(url,phase){
+  $('phase').textContent=phase;
+  const r=await fetch(url);
+  if(!r.ok) throw new Error(url+' → HTTP '+r.status);
+  const ds=new DecompressionStream('gzip');
+  const buf=await new Response(r.body.pipeThrough(ds)).arrayBuffer();
+  return JSON.parse(new TextDecoder('utf-8').decode(buf));
+}
+
+/* ── подготовка данных ── */
+function prep(rec){
+  rec._h=[rec['Полное наименование'],rec['Сокращённое наименование'],rec['Рег. Номер'],
+    rec['ИНН'],rec['ОГРН'],rec['Адрес'],rec['Домены'].join(' '),rec['Сайты'].join(' '),
+    rec['Email'].join(' '),rec['Телефоны'].join(' ')].join(' ').toLowerCase();
+  return rec;
+}
+
+/* ── фильтрация ── */
+function filtered(){
+  const toks=q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const t=ftype.value,s=fstatus.value;
+  return DATA.filter(r=>{
+    if(t&&r['Тип']!==t)return false;
+    if(s&&r['Статус']!==s)return false;
+    if(deepCode)return r['Рег. Номер']===deepCode;
+    return toks.every(k=>r._h.includes(k));
+  });
+}
+
+/* ── подсветка ── */
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function hl(text){
+  const toks=q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if(!toks.length||deepCode)return esc(text);
+  let out=esc(text);
+  toks.forEach(k=>{
+    const re=new RegExp('('+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+    out=out.replace(re,'<mark>$1</mark>');
+  });
+  return out;
+}
+
+/* ── share-текст ── */
+function shareText(r){
+  const link='https://prog815.github.io/mfo-registry/?code='+encodeURIComponent(r['Рег. Номер']);
+  const L=[r['Полное наименование']+(r['Сокращённое наименование']?' ('+r['Сокращённое наименование']+')':''),
+    link,
+    'Рег. номер: '+r['Рег. Номер'],
+    'Статус: '+r['Статус']+' · '+r['Тип'],
+    'ИНН: '+r['ИНН']+' · ОГРН: '+r['ОГРН'],
+    r['Сайты'].length?'Сайты: '+r['Сайты'].join(', '):'',
+    'Дата внесения: '+r['Дата внесения'],
+    'Источник: Банк России, выгрузка на '+ACT];
+  return L.filter(Boolean).join('\n');
+}
+
+/* ── карточка ── */
+function card(r){
+  const tb=r['Тип']==='МФК'?'badge--mfk':'badge--mkk';
+  const sb=r['Статус']==='Действующая'?'badge--ok':'badge--bad';
+  const dom=r['Домены'].map(d=>'<span class="chip">'+esc(d)+'</span>').join('');
+  const sites=r['Сайты'].map(s=>{
+    const href=/^https?:\/\//.test(s)?s:'https://'+s.replace(/^\/+/,'');
+    return '<span class="chip"><a href="'+esc(href)+'" target="_blank" rel="noopener nofollow">'+esc(s)+'</a></span>';
+  }).join('');
+  return '<article class="card'+(r['Рег. Номер']===deepCode?' highlight':'')+'" data-reg="'+esc(r['Рег. Номер'])+'">'
+    +'<div class="card__top">'
+      +'<span class="code" title="Нажмите, чтобы скопировать">'+esc(r['Рег. Номер'])+'</span>'
+      +'<span class="badge '+sb+'">'+esc(r['Статус'])+'</span>'
+      +(r['Тип']?'<span class="badge '+tb+'">'+esc(r['Тип'])+'</span>':'')
+    +'</div>'
+    +'<h3>'+hl(r['Полное наименование'])
+      +(r['Сокращённое наименование']?'<span class="short">'+hl(r['Сокращённое наименование'])+'</span>':'')+'</h3>'
+    +'<div class="rows">'
+      +'<div class="row"><b>ИНН</b> '+hl(r['ИНН'])+' · <b>ОГРН</b> '+hl(r['ОГРН'])+'</div>'
+      +(r['Дата внесения']?'<div class="row"><b>Внесена в реестр:</b> '+esc(r['Дата внесения'])+'</div>':'')
+      +(r['Адрес']?'<div class="row"><b>Адрес:</b> '+esc(r['Адрес'])+'</div>':'')
+      +(sites?'<div class="chips">'+sites+'</div>':'')
+      +(dom?'<div class="row"><b>Домены:</b> '+dom+'</div>':'')
+      +(r['Телефоны'].length?'<div class="row"><b>Телефон:</b> '+esc(r['Телефоны'].join(', '))+'</div>':'')
+      +(r['Email'].length?'<div class="row"><b>Email:</b> '+esc(r['Email'].join(', '))+'</div>':'')
+    +'</div>'
+    +(r['Статус']==='Исключённая'?'<div class="note-excl">Организация исключена из реестра. Дата и причина исключения в выгрузке Банка России не указываются. Для действующей компании выберите фильтр «Действующие».</div>':'')
+    +'<div class="card__actions"><klassik-share url="" text="'+esc(shareText(r))+'">📤 Поделиться</klassik-share></div>'
+    +'</article>';
+}
+
+/* ── рендер ── */
+function render(){
+  const list=filtered();
+  const n=list.length;
+  shown=Math.min(Math.max(shown,PAGE),n);
+  results.innerHTML=list.slice(0,shown).map(card).join('');
+  more.hidden=shown>=n;
+  more.textContent='Показать ещё +'+PAGE+' (показано '+shown+' из '+n+')';
+  clear.hidden=!(q.value||ftype.value||fstatus.value!=='Действующая'||deepCode);
+  qx.hidden=!q.value;
+  if(!n){
+    empty.hidden=false;
+    empty.textContent=deepCode
+      ?'Не найдено в выгрузке на '+ACT+'. Запись с рег. номером «'+deepCode+'» отсутствует.'
+      :'Не найдено в выгрузке на '+ACT+'.';
+    stat.textContent='Найдено: 0';
+  }else{
+    empty.hidden=true;
+    stat.textContent='Найдено: '+n+' · Показано: '+shown;
+  }
+  if(deepCode){
+    history.replaceState(null,'',location.pathname);
+    deepCode='';
+  }
+}
+
+/* ── toast + копирование ── */
+let tt;
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800);}
+results.addEventListener('click',e=>{
+  const c=e.target.closest('.code');
+  if(c){navigator.clipboard.writeText(c.textContent).then(()=>toast('Скопировано'));return;}
+});
+
+/* ── события ── */
+let deb;
+q.addEventListener('input',()=>{shown=PAGE;clearTimeout(deb);deb=setTimeout(render,180);});
+ftype.addEventListener('change',()=>{shown=PAGE;render();});
+fstatus.addEventListener('change',()=>{shown=PAGE;render();});
+more.addEventListener('click',()=>{shown+=PAGE;render();});
+clear.addEventListener('click',()=>{q.value='';ftype.value='';fstatus.value='Действующая';
+  shown=PAGE;render();});
+qx.addEventListener('click',()=>{q.value='';shown=PAGE;render();q.focus();});
+
+/* ── ↑/↓ по карточкам ── */
+let idx=-1;
+function nav(dir){
+  const cards=[...results.querySelectorAll('.card')];
+  if(!cards.length)return;
+  idx=Math.min(Math.max(idx+dir,0),cards.length-1);
+  cards[idx].scrollIntoView({behavior:'smooth',block:'center'});
+}
+$('up').addEventListener('click',()=>nav(-1));
+$('dn').addEventListener('click',()=>nav(1));
+
+/* ── старт ── */
+(async function(){
+  try{
+    const params=new URLSearchParams(location.search);
+    deepCode=params.get('code')||'';
+    [DATA,META]=await Promise.all([
+      loadGz('mfo.json.gz','Загрузка данных…'),
+      loadGz('mfo_meta.json.gz','Загрузка метаданных…').catch(()=>null)
+    ]);
+    DATA.forEach(prep);
+    ACT=(META&&META.actualization_date)||'—';
+    $('adate').textContent=ACT;
+    $('spinner').hidden=true;
+    render();
+  }catch(err){
+    $('phase').textContent='Ошибка загрузки данных: '+err.message;
+  }
+})();
+})();
+</script>
+</body>
+</html>
