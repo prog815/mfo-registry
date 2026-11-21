@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://prog815.github.io/mfo-registry/sitemap.xml
