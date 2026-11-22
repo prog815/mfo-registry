@@ -92,9 +92,7 @@ select{padding:10px 12px;font-size:14px;border:1px solid var(--border);border-ra
 .note-excl{font-size:12.5px;color:var(--muted);background:var(--bad-soft);
   border:1px solid var(--border);border-radius:10px;padding:6px 10px;margin-top:8px}
 .card__actions{margin-top:10px}
-.btn-share{font-size:13px;padding:7px 14px;border:1px solid var(--border);border-radius:10px;
-  background:var(--card);color:var(--accent);cursor:pointer}
-.btn-share:hover{border-color:var(--accent);background:var(--accent-soft)}
+.card__actions klassik-share{display:inline-block}
 mark{background:rgba(250,204,21,.45);color:inherit;border-radius:3px;padding:0 1px}
 @media (prefers-color-scheme:dark){mark{background:rgba(250,204,21,.28)}}
 .more{display:block;margin:14px auto 30px;padding:10px 22px;font-size:14px;border:1px solid var(--border);
@@ -257,56 +255,21 @@ let tt;
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');
   clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800);}
 
-/* ── Поделиться: ТОЛЬКО библиотека хаба (share.js v1.0.3).
-     Кнопка справочника вызывает функцию библиотеки; окно открывает библиотека.
-     Своих модалок, navigator.share и clipboard-подмен НЕТ. ── */
-function dialogOpened(){return !!document.querySelector('dialog[open]');}
-
-function callHubShare(text){
-  /* 1) глобальная функция библиотеки из хаба */
-  const names=['klassikShare','klassik_share','shareKlassik','openKlassikShare',
-               'klassikShareOpen','openShare','shareOpen'];
-  for(const n of names){
-    const fn=window[n];
-    if(typeof fn!=='function')continue;
-    const sigs=[()=>fn(text,''),()=>fn(text),()=>fn({text:text,url:''})];
-    for(const s of sigs){
-      try{s();}catch(e){}
-      if(dialogOpened())return true;
-    }
-  }
-  /* 2) метод веб-компонента <klassik-share> */
-  if(customElements.get('klassik-share')){
-    const el=document.createElement('klassik-share');
-    el.setAttribute('url','');
-    el.setAttribute('text',text);
-    el.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden';
-    document.body.appendChild(el);
-    for(const m of ['open','openShare','share','show','showModal']){
-      if(typeof el[m]==='function'){
-        try{el[m](text,'');}catch(e){}
-        if(dialogOpened()){el.remove();return true;}
-        try{el[m]();}catch(e){}
-        if(dialogOpened()){el.remove();return true;}
-      }
-    }
-    const b=(el.shadowRoot&&el.shadowRoot.querySelector('button'))||el.querySelector('button');
-    if(b){b.click();if(dialogOpened()){el.remove();return true;}}
-    el.remove();
-  }
-  return false;
-}
-
+/* ── Поделиться: контракт экосистемы.
+     Кнопка живёт ВНУТРИ компонента хаба <klassik-share>:
+     url="" передаётся атрибутом, текст — атрибутом text (ссылка второй строкой).
+     bindShareButtons() после каждого рендера освежает text и дожидается
+     определения компонента, если share.js ещё не выполнился. ── */
 function bindShareButtons(){
-  results.querySelectorAll('.share-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const rec=REGMAP[btn.dataset.reg];
-      if(!rec)return;
-      if(!callHubShare(shareText(rec))){
-        toast('Библиотека «Поделиться» не откликнулась');
-      }
-    });
-  });
+  const els=results.querySelectorAll('klassik-share');
+  const setText=el=>{
+    const rec=REGMAP[el.dataset.reg];
+    if(rec) el.setAttribute('text',shareText(rec));
+  };
+  els.forEach(setText);
+  if(!customElements.get('klassik-share')){
+    customElements.whenDefined('klassik-share').then(()=>els.forEach(setText));
+  }
 }
 
 /* ── карточка: title-подсказка над каждым элементом ── */
@@ -336,7 +299,7 @@ function card(r){
       +(r['Email'].length?'<div class="row" title="Адреса электронной почты организации"><b>Email:</b> '+hl(r['Email'].join(', '))+'</div>':'')
     +'</div>'
     +(r['Статус']==='Исключённая'?'<div class="note-excl" title="Пояснение по исключённым записям">Организация исключена из реестра. Дата и причина исключения в выгрузке Банка России не указываются.</div>':'')
-    +'<div class="card__actions"><button class="btn-share share-btn" type="button" data-reg="'+esc(r['Рег. Номер'])+'" title="Поделиться карточкой организации">📤 Поделиться</button></div>'
+    +'<div class="card__actions"><klassik-share url="" data-reg="'+esc(r['Рег. Номер'])+'" text="'+esc(shareText(r))+'" title="Поделиться карточкой организации">📤 Поделиться</klassik-share></div>'
     +'</article>';
 }
 
@@ -396,6 +359,14 @@ $('dn').addEventListener('click',()=>window.scrollTo({top:document.documentEleme
     $('adate').textContent=ACT;
     $('spinner').hidden=true;
     render();
+    if(!customElements.get('klassik-share')){
+      customElements.whenDefined('klassik-share').catch(()=>{});
+      setTimeout(()=>{
+        if(!customElements.get('klassik-share')){
+          stat.textContent+=' · библиотека «Поделиться» не загрузилась';
+        }
+      },3000);
+    }
   }catch(err){
     $('phase').textContent='Ошибка загрузки данных: '+err.message;
   }
