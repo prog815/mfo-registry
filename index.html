@@ -92,9 +92,6 @@ select{padding:10px 12px;font-size:14px;border:1px solid var(--border);border-ra
 .note-excl{font-size:12.5px;color:var(--muted);background:var(--bad-soft);
   border:1px solid var(--border);border-radius:10px;padding:6px 10px;margin-top:8px}
 .card__actions{margin-top:10px}
-.btn-share{font-size:13px;padding:7px 14px;border:1px solid var(--border);border-radius:10px;
-  background:var(--card);color:var(--accent);cursor:pointer}
-.btn-share:hover{border-color:var(--accent);background:var(--accent-soft)}
 mark{background:rgba(250,204,21,.45);color:inherit;border-radius:3px;padding:0 1px}
 @media (prefers-color-scheme:dark){mark{background:rgba(250,204,21,.28)}}
 .more{display:block;margin:14px auto 30px;padding:10px 22px;font-size:14px;border:1px solid var(--border);
@@ -127,15 +124,15 @@ footer .disc{margin-top:10px;font-size:12px}
 
   <div class="controls">
     <div class="search">
-      <input id="q" type="search" placeholder="Название, ИНН, ОГРН, рег. номер, домен, адрес, телефон…" autocomplete="off" aria-label="Поиск по реестру">
-      <button class="x" id="qx" type="button" aria-label="Очистить поиск" hidden>✕</button>
+      <input id="q" type="search" placeholder="Название, ИНН, ОГРН, рег. номер, домен, адрес, телефон…" autocomplete="off" aria-label="Поиск по реестру" title="Поиск по реквизитам: название, рег. номер, ИНН, ОГРН, адрес, сайт, телефон, email, даты. Вид и статус выбираются списками ниже">
+      <button class="x" id="qx" type="button" aria-label="Очистить поиск" title="Очистить строку поиска" hidden>✕</button>
     </div>
-    <select id="ftype" aria-label="Вид организации">
+    <select id="ftype" aria-label="Вид организации" title="Фильтр по виду микрофинансовой организации">
       <option value="">Все виды</option>
       <option value="МФК">МФК</option>
       <option value="МКК">МКК</option>
     </select>
-    <select id="fstatus" aria-label="Статус">
+    <select id="fstatus" aria-label="Статус" title="Фильтр по статусу записи в реестре">
       <option value="Действующая" selected>Действующие</option>
       <option value="Исключённая">Исключённые</option>
       <option value="">Все статусы</option>
@@ -144,7 +141,7 @@ footer .disc{margin-top:10px;font-size:12px}
 
   <div class="statusline">
     <span id="stat">Загрузка…</span>
-    <a id="clear" hidden>Очистить</a>
+    <a id="clear" title="Сбросить поиск и фильтры к значению по умолчанию" hidden>Очистить</a>
   </div>
 
   <div class="spinner" id="spinner">
@@ -155,7 +152,7 @@ footer .disc{margin-top:10px;font-size:12px}
 
   <div id="results"></div>
   <div class="empty" id="empty" hidden></div>
-  <button class="more" id="more" hidden>Показать ещё</button>
+  <button class="more" id="more" title="Показать следующую порцию карточек" hidden>Показать ещё</button>
 </div>
 
 <footer>
@@ -182,8 +179,8 @@ footer .disc{margin-top:10px;font-size:12px}
 </footer>
 
 <div class="fab">
-  <button id="up" type="button" aria-label="В начало страницы">↑</button>
-  <button id="dn" type="button" aria-label="В конец страницы">↓</button>
+  <button id="up" type="button" title="Прокрутить страницу в начало" aria-label="В начало страницы">↑</button>
+  <button id="dn" type="button" title="Прокрутить страницу в конец" aria-label="В конец страницы">↓</button>
 </div>
 <div class="toast" id="toast">Скопировано</div>
 
@@ -206,17 +203,18 @@ async function loadGz(url,phase){
   return JSON.parse(new TextDecoder('utf-8').decode(buf));
 }
 
-/* ── подготовка: поисковая строка по ВСЕМ полям ── */
+/* ── поисковая строка: ТОЛЬКО реквизиты.
+     Вид/Тип/Статус НЕ входят — они управляются выпадающими списками. ── */
 function prep(rec){
   rec._h=[rec['Полное наименование'],rec['Сокращённое наименование'],rec['Рег. Номер'],
-    rec['ИНН'],rec['ОГРН'],rec['Адрес'],rec['Тип'],rec['Вид'],rec['Статус'],
+    rec['ИНН'],rec['ОГРН'],rec['Адрес'],
     rec['Дата внесения'],rec['Дата исключения'],
     rec['Домены'].join(' '),rec['Сайты'].join(' '),
     rec['Email'].join(' '),rec['Телефоны'].join(' ')].join(' ').toLowerCase();
   return rec;
 }
 
-/* ── фильтрация: AND по токенам ── */
+/* ── фильтрация: AND по токенам + списки ── */
 function tokens(){return q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);}
 function filtered(){
   const toks=tokens(),t=ftype.value,s=fstatus.value;
@@ -254,74 +252,43 @@ function shareText(r){
     'Источник: Банк России, выгрузка на '+ACT].filter(Boolean).join('\n');
 }
 
-/* ── Поделиться: компонент хаба → нативный share → clipboard ── */
-function dialogOpened(){return !!document.querySelector('dialog[open]');}
-async function nativeShare(text){
-  try{
-    if(navigator.share){await navigator.share({text:text});return;}
-  }catch(e){if(e&&e.name==='AbortError')return;}
-  try{await navigator.clipboard.writeText(text);toast('Текст карточки скопирован');}
-  catch(e){toast('Не удалось поделиться');}
-}
-function shareViaHub(text){
-  try{
-    if(customElements.get('klassik-share')){
-      let host=document.getElementById('ks-host');
-      if(!host){
-        host=document.createElement('klassik-share');
-        host.id='ks-host';
-        host.setAttribute('url','');
-        host.style.cssText='position:fixed;left:0;bottom:0;width:0;height:0;overflow:hidden';
-        document.body.appendChild(host);
-      }
-      host.setAttribute('text',text);
-      for(const m of ['open','openShare','share','show']){
-        if(typeof host[m]==='function'){host[m](text);if(dialogOpened())return;}
-      }
-      const b=(host.shadowRoot&&host.shadowRoot.querySelector('button'))||host.querySelector('button');
-      if(b){b.click();if(dialogOpened())return;}
-      host.click();if(dialogOpened())return;
-    }
-  }catch(e){}
-  nativeShare(text);
-}
+/* ── Поделиться: ТОЛЬКО компонент хаба <klassik-share>.
+     Никаких нативных fallback: bindShareButtons проставляет text после рендера. ── */
 function bindShareButtons(){
-  results.querySelectorAll('.share-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const rec=REGMAP[btn.dataset.reg];
-      if(rec)shareViaHub(shareText(rec));
-    });
+  results.querySelectorAll('klassik-share').forEach(el=>{
+    const rec=REGMAP[el.dataset.reg];
+    if(rec) el.setAttribute('text',shareText(rec));
   });
 }
 
-/* ── карточка: подсветка во всех отображаемых полях ── */
+/* ── карточка: title-подсказка над каждым элементом ── */
 function card(r){
   const tb=r['Тип']==='МФК'?'badge--mfk':'badge--mkk';
   const sb=r['Статус']==='Действующая'?'badge--ok':'badge--bad';
-  const dom=r['Домены'].map(d=>'<span class="chip">'+hl(d)+'</span>').join('');
+  const dom=r['Домены'].map(d=>'<span class="chip" title="Домен официального сайта — по нему работает поиск">'+hl(d)+'</span>').join('');
   const sites=r['Сайты'].map(s=>{
     const href=/^https?:\/\//.test(s)?s:'https://'+s.replace(/^\/+/,'');
-    return '<span class="chip"><a href="'+esc(href)+'" target="_blank" rel="noopener nofollow">'+hl(s)+'</a></span>';
+    return '<span class="chip" title="Официальный сайт организации (откроется в новой вкладке)"><a href="'+esc(href)+'" target="_blank" rel="noopener nofollow">'+hl(s)+'</a></span>';
   }).join('');
   return '<article class="card'+(r['Рег. Номер']===deepCode?' highlight':'')+'" data-reg="'+esc(r['Рег. Номер'])+'">'
     +'<div class="card__top">'
-      +'<span class="code" title="Нажмите, чтобы скопировать">'+esc(r['Рег. Номер'])+'</span>'
-      +'<span class="badge '+sb+'">'+hl(r['Статус'])+'</span>'
-      +(r['Тип']?'<span class="badge '+tb+'">'+hl(r['Тип'])+'</span>':'')
+      +'<span class="code" title="Регистрационный номер записи в реестре ЦБ РФ — нажмите, чтобы скопировать">'+esc(r['Рег. Номер'])+'</span>'
+      +'<span class="badge '+sb+'" title="Статус записи по выгрузке ЦБ РФ от '+esc(ACT)+'">'+esc(r['Статус'])+'</span>'
+      +(r['Тип']?'<span class="badge '+tb+'" title="Вид микрофинансовой организации по реестру ЦБ РФ">'+esc(r['Тип'])+'</span>':'')
     +'</div>'
-    +'<h3>'+hl(r['Полное наименование'])
-      +(r['Сокращённое наименование']?'<span class="short">'+hl(r['Сокращённое наименование'])+'</span>':'')+'</h3>'
+    +'<h3 title="Полное наименование юридического лица">'+hl(r['Полное наименование'])
+      +(r['Сокращённое наименование']?'<span class="short" title="Сокращённое наименование">'+hl(r['Сокращённое наименование'])+'</span>':'')+'</h3>'
     +'<div class="rows">'
-      +'<div class="row"><b>ИНН</b> '+hl(r['ИНН'])+' · <b>ОГРН</b> '+hl(r['ОГРН'])+'</div>'
-      +(r['Дата внесения']?'<div class="row"><b>Внесена в реестр:</b> '+hl(r['Дата внесения'])+'</div>':'')
-      +(r['Адрес']?'<div class="row"><b>Адрес:</b> '+hl(r['Адрес'])+'</div>':'')
+      +'<div class="row"><span title="Идентификационный номер налогоплательщика"><b>ИНН</b> '+hl(r['ИНН'])+'</span> · <span title="Основной государственный регистрационный номер"><b>ОГРН</b> '+hl(r['ОГРН'])+'</span></div>'
+      +(r['Дата внесения']?'<div class="row" title="Дата внесения сведений о юридическом лице в государственный реестр МФО"><b>Внесена в реестр:</b> '+hl(r['Дата внесения'])+'</div>':'')
+      +(r['Адрес']?'<div class="row" title="Адрес, указанный в едином государственном реестре юридических лиц"><b>Адрес:</b> '+hl(r['Адрес'])+'</div>':'')
       +(sites?'<div class="chips">'+sites+'</div>':'')
-      +(dom?'<div class="row"><b>Домены:</b> '+dom+'</div>':'')
-      +(r['Телефоны'].length?'<div class="row"><b>Телефон:</b> '+hl(r['Телефоны'].join(', '))+'</div>':'')
-      +(r['Email'].length?'<div class="row"><b>Email:</b> '+hl(r['Email'].join(', '))+'</div>':'')
+      +(dom?'<div class="row" title="Нормализованные домены официальных сайтов"><b>Домены:</b> '+dom+'</div>':'')
+      +(r['Телефоны'].length?'<div class="row" title="Номера контактных телефонов организации"><b>Телефон:</b> '+hl(r['Телефоны'].join(', '))+'</div>':'')
+      +(r['Email'].length?'<div class="row" title="Адреса электронной почты организации"><b>Email:</b> '+hl(r['Email'].join(', '))+'</div>':'')
     +'</div>'
-    +(r['Статус']==='Исключённая'?'<div class="note-excl">Организация исключена из реестра. Дата и причина исключения в выгрузке Банка России не указываются.</div>':'')
-    +'<div class="card__actions"><button class="btn-share share-btn" data-reg="'+esc(r['Рег. Номер'])+'" type="button">📤 Поделиться</button></div>'
+    +(r['Статус']==='Исключённая'?'<div class="note-excl" title="Пояснение по исключённым записям">Организация исключена из реестра. Дата и причина исключения в выгрузке Банка России не указываются.</div>':'')
+    +'<div class="card__actions"><klassik-share url="" data-reg="'+esc(r['Рег. Номер'])+'" title="Поделиться карточкой организации">📤 Поделиться</klassik-share></div>'
     +'</article>';
 }
 
