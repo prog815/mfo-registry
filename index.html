@@ -101,20 +101,6 @@ mark{background:rgba(250,204,21,.45);color:inherit;border-radius:3px;padding:0 1
   border-radius:12px;background:var(--card);color:var(--accent);cursor:pointer}
 .more:hover{border-color:var(--accent)}
 .empty{text-align:center;color:var(--muted);padding:40px 0;font-size:15px}
-/* fallback-модалка «Поделиться» — стиль хаба */
-.share-fb{border:1px solid var(--border);border-radius:16px;background:var(--card);color:var(--text);
-  max-width:520px;width:calc(100% - 32px);padding:18px;box-shadow:var(--shadow)}
-.share-fb::backdrop{background:rgba(15,23,42,.45)}
-.share-fb h3{margin:0 0 10px;font-size:16px}
-.share-fb textarea{width:100%;background:var(--chip);color:var(--text);border:1px solid var(--border);
-  border-radius:10px;padding:10px;font-size:13px;resize:vertical;font-family:inherit}
-.share-fb__row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.share-fb__copy{background:#2563eb;color:#fff;border:0;border-radius:10px;padding:9px 16px;
-  font-size:14px;cursor:pointer}
-.share-fb__copy:hover{background:#1d4ed8}
-.share-fb__mail,.share-fb__close{border:1px solid var(--border);border-radius:10px;padding:9px 14px;
-  font-size:14px;background:var(--card);color:var(--text);cursor:pointer;text-decoration:none}
-.share-fb__mail:hover,.share-fb__close:hover{border-color:var(--accent);color:var(--accent)}
 footer{border-top:1px solid var(--border);margin-top:30px;padding:22px 0 30px;font-size:13px;color:var(--muted)}
 footer .fr{margin:6px 0}
 footer a{color:var(--accent);text-decoration:none}
@@ -201,9 +187,6 @@ footer .disc{margin-top:10px;font-size:12px}
 </div>
 <div class="toast" id="toast">Скопировано</div>
 
-<!-- Хост компонента хаба: апгрейдится при загрузке share.js, стоит вне экрана -->
-<klassik-share id="ks-host" url="" style="position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden"></klassik-share>
-
 <script>
 (function(){
 "use strict";
@@ -274,70 +257,54 @@ let tt;
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');
   clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800);}
 
-/* ── Поделиться ──
-   Кнопка справочника передаёт текст в компонент хаба <klassik-share> (хост #ks-host).
-   Перебираем публичные API компонента; детект успеха — открытый <dialog>.
-   Если компонент не откликнулся — встроенная модалка в стиле хаба (без OS-шеров). */
+/* ── Поделиться: ТОЛЬКО библиотека хаба (share.js v1.0.3).
+     Кнопка справочника вызывает функцию библиотеки; окно открывает библиотека.
+     Своих модалок, navigator.share и clipboard-подмен НЕТ. ── */
 function dialogOpened(){return !!document.querySelector('dialog[open]');}
 
-function shareViaHub(text){
-  const host=document.getElementById('ks-host');
-  if(!host)return false;
-  host.setAttribute('url','');
-  host.setAttribute('text',text);
-  try{host.text=text;}catch(e){}
-  const attempts=[
-    ()=>{if(typeof host.open==='function')host.open(text);},
-    ()=>{if(typeof host.open==='function')host.open();},
-    ()=>{if(typeof host.show==='function')host.show(text);},
-    ()=>{if(typeof host.showModal==='function')host.showModal();},
-    ()=>{if(typeof host.share==='function')host.share(text);},
-    ()=>{const b=host.shadowRoot&&host.shadowRoot.querySelector('button');if(b)b.click();},
-    ()=>{const b=host.querySelector('button');if(b)b.click();},
-    ()=>host.click()
-  ];
-  for(const a of attempts){
-    try{a();}catch(e){}
-    if(dialogOpened())return true;
+function callHubShare(text){
+  /* 1) глобальная функция библиотеки из хаба */
+  const names=['klassikShare','klassik_share','shareKlassik','openKlassikShare',
+               'klassikShareOpen','openShare','shareOpen'];
+  for(const n of names){
+    const fn=window[n];
+    if(typeof fn!=='function')continue;
+    const sigs=[()=>fn(text,''),()=>fn(text),()=>fn({text:text,url:''})];
+    for(const s of sigs){
+      try{s();}catch(e){}
+      if(dialogOpened())return true;
+    }
+  }
+  /* 2) метод веб-компонента <klassik-share> */
+  if(customElements.get('klassik-share')){
+    const el=document.createElement('klassik-share');
+    el.setAttribute('url','');
+    el.setAttribute('text',text);
+    el.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden';
+    document.body.appendChild(el);
+    for(const m of ['open','openShare','share','show','showModal']){
+      if(typeof el[m]==='function'){
+        try{el[m](text,'');}catch(e){}
+        if(dialogOpened()){el.remove();return true;}
+        try{el[m]();}catch(e){}
+        if(dialogOpened()){el.remove();return true;}
+      }
+    }
+    const b=(el.shadowRoot&&el.shadowRoot.querySelector('button'))||el.querySelector('button');
+    if(b){b.click();if(dialogOpened()){el.remove();return true;}}
+    el.remove();
   }
   return false;
 }
 
-function ensureFallback(){
-  let d=document.getElementById('share-fb');
-  if(d)return d;
-  d=document.createElement('dialog');
-  d.id='share-fb';d.className='share-fb';
-  d.innerHTML='<h3>Поделиться</h3>'
-    +'<textarea id="share-fb-text" rows="9" readonly title="Текст карточки для копирования или отправки"></textarea>'
-    +'<div class="share-fb__row">'
-    +'<button type="button" class="share-fb__copy" id="share-fb-copy" title="Скопировать текст карточки в буфер обмена">Скопировать</button>'
-    +'<a class="share-fb__mail" id="share-fb-mail" title="Отправить текст карточки по электронной почте" href="#">📧 Веб-почта</a>'
-    +'<button type="button" class="share-fb__close" id="share-fb-close" title="Закрыть окно">Закрыть</button>'
-    +'</div>';
-  document.body.appendChild(d);
-  d.querySelector('#share-fb-copy').addEventListener('click',()=>{
-    navigator.clipboard.writeText(d.querySelector('#share-fb-text').value)
-      .then(()=>toast('Скопировано'));
-  });
-  d.querySelector('#share-fb-close').addEventListener('click',()=>d.close());
-  return d;
-}
-function openFallback(text){
-  const d=ensureFallback();
-  d.querySelector('#share-fb-text').value=text;
-  const subject=encodeURIComponent(text.split('\n')[0]);
-  d.querySelector('#share-fb-mail').href='mailto:?subject='+subject+'&body='+encodeURIComponent(text);
-  d.showModal();
-}
-function doShare(text){
-  if(!shareViaHub(text))openFallback(text);
-}
 function bindShareButtons(){
   results.querySelectorAll('.share-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const rec=REGMAP[btn.dataset.reg];
-      if(rec)doShare(shareText(rec));
+      if(!rec)return;
+      if(!callHubShare(shareText(rec))){
+        toast('Библиотека «Поделиться» не откликнулась');
+      }
     });
   });
 }
