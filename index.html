@@ -5,372 +5,833 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Государственный реестр МФО — справочник</title>
 <meta name="description" content="Справочный снимок государственного реестра микрофинансовых организаций Банка России. Проверка перед займом: поиск по названию, ИНН, ОГРН, регистрационному номеру и домену сайта.">
-<link rel="canonical" href="https://prog815.github.io/mfo-registry/">
-<meta name="robots" content="index,follow,max-image-preview:large">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Экосистема «Классик»">
-<meta property="og:title" content="Государственный реестр МФО — справочник">
-<meta property="og:description" content="Проверка микрофинансовых компаний и микрокредитных компаний по реестру Банка России. Поиск по домену, ИНН, ОГРН.">
-<meta property="og:url" content="https://prog815.github.io/mfo-registry/">
-<meta property="og:locale" content="ru_RU">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Государственный реестр МФО — справочник">
-<meta name="twitter:description" content="Проверка МФО по реестру Банка России. Поиск по домену, ИНН, ОГРН.">
-<meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0b1120" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="https://prog815.github.io/favicon.svg?v=1.0.0" type="image/svg+xml">
-<link rel="apple-touch-icon" href="https://prog815.github.io/favicon.svg?v=1.0.0">
+<link rel="icon" type="image/svg+xml" href="https://prog815.github.io/favicon.svg?v=1.0.0">
+<meta name="theme-color" content="#f5f7fb">
+
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Dataset","name":"Государственный реестр микрофинансовых организаций","description":"Справочный снимок реестра МФО Банка России.","url":"https://prog815.github.io/mfo-registry/","inLanguage":"ru","creator":{"@type":"Person","name":"Алексей Енин","sameAs":["https://m.vk.ru/alekseyenin","https://t.me/AlekseyEnin","https://max.ru/channel_prog815","https://www.linkedin.com/in/eavprog/"]},"distribution":{"@type":"DataDownload","encodingFormat":"application/gzip","contentUrl":"https://prog815.github.io/mfo-registry/mfo.json.gz"}}
-</script>
-<script src="https://prog815.github.io/share.js?v=1.0.3" defer></script>
-<style>
-:root{
-  --bg:#f5f7fb;--bg-blur:rgba(245,247,251,.85);--card:#fff;--chip:#f1f5f9;
-  --text:#0f172a;--muted:#5b6b7f;--border:#e2e8f0;
-  --accent:#2563eb;--accent-soft:#eff6ff;--accent-ring:rgba(37,99,235,.25);--accent-2:#7c3aed;
-  --ok:#16a34a;--ok-soft:#f0fdf4;--bad:#dc2626;--bad-soft:#fef2f2;--warn:#b45309;
-  --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);--radius:16px;
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Государственный реестр микрофинансовых организаций",
+  "description": "Справочный снимок открытых данных Банка России о микрофинансовых и микрокредитных компаниях",
+  "url": "https://prog815.github.io/mfo-registry/",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Экосистема «Классик»",
+    "url": "https://prog815.github.io/"
+  },
+  "author": {
+    "@type": "Person",
+    "sameAs": [
+      "https://m.vk.ru/alekseyenin",
+      "https://t.me/AlekseyEnin",
+      "https://max.ru/channel_prog815",
+      "https://www.linkedin.com/in/eavprog/"
+    ]
+  }
 }
-@media (prefers-color-scheme:dark){:root{
-  --bg:#0b1120;--bg-blur:rgba(11,17,32,.85);--card:#111a2c;--chip:rgba(148,163,184,.12);
-  --text:#e6edf7;--muted:#94a3b8;--border:#1e293b;--accent:#60a5fa;--accent-soft:rgba(96,165,250,.12);
-  --accent-ring:rgba(96,165,250,.35);--accent-2:#a78bfa;
-  --ok:#4ade80;--ok-soft:rgba(74,222,128,.12);--bad:#f87171;--bad-soft:rgba(248,113,113,.12);--warn:#fbbf24;
-}}
-*{box-sizing:border-box}
-[hidden]{display:none!important}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  background:var(--bg);color:var(--text);line-height:1.5}
-.wrap{max-width:880px;margin:0 auto;padding:0 16px}
-.klassik-banner{display:block;text-align:center;padding:14px 0 6px}
-.klassik-banner img{max-width:100%;height:auto;border-radius:10px}
-h1{font-size:clamp(24px,4.5vw,34px);margin:.4em 0 .2em}
-.lead{color:var(--muted);margin:0 0 18px;font-size:15px}
-.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.search{flex:1 1 260px;position:relative}
-.search input{width:100%;padding:11px 38px 11px 14px;font-size:15px;border:1px solid var(--border);
-  border-radius:12px;background:var(--card);color:var(--text);outline:none}
-.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring)}
-.search .x{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;
-  color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:8px}
-.search .x:hover{color:var(--text);background:var(--chip)}
-select{padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:12px;
-  background:var(--card);color:var(--text);cursor:pointer}
-.statusline{display:flex;justify-content:space-between;align-items:center;gap:10px;
-  color:var(--muted);font-size:13px;margin:6px 2px 14px;flex-wrap:wrap}
-.statusline a{color:var(--accent);cursor:pointer;text-decoration:none}
-.statusline a:hover{text-decoration:underline}
-.spinner{text-align:center;padding:48px 0;color:var(--muted)}
-.spinner .ph{font-size:13px;margin-top:8px}
-.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent);
-  animation:pd 1s infinite}
-@keyframes pd{0%,100%{opacity:.2}50%{opacity:1}}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px}
-.card.highlight{outline:2px solid var(--accent);outline-offset:2px}
-.card__top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
-.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;
-  background:var(--chip);border:1px solid var(--border);border-radius:8px;padding:3px 8px;
-  cursor:pointer;color:var(--text)}
-.code:hover{border-color:var(--accent);color:var(--accent)}
-.badge{font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px}
-.badge--mfk{background:var(--accent-soft);color:var(--accent)}
-.badge--mkk{background:rgba(124,58,237,.12);color:var(--accent-2)}
-.badge--ok{background:var(--ok-soft);color:var(--ok)}
-.badge--bad{background:var(--bad-soft);color:var(--bad)}
-.card h3{margin:0 0 6px;font-size:16px}
-.card h3 .short{display:block;font-size:13px;color:var(--muted);font-weight:400;margin-top:2px}
-.rows{font-size:14px;color:var(--muted)}
-.rows b{color:var(--text);font-weight:600}
-.rows .row{margin:3px 0;word-break:break-word}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
-.chip{font-size:12px;background:var(--chip);border:1px solid var(--border);border-radius:8px;
-  padding:2px 8px;font-family:ui-monospace,Menlo,Consolas,monospace}
-.chip a{color:var(--accent);text-decoration:none}
-.chip a:hover{text-decoration:underline}
-.note-excl{font-size:12.5px;color:var(--muted);background:var(--bad-soft);
-  border:1px solid var(--border);border-radius:10px;padding:6px 10px;margin-top:8px}
-.card__actions{margin-top:10px}
-.card__actions klassik-share{display:inline-block}
-mark{background:rgba(250,204,21,.45);color:inherit;border-radius:3px;padding:0 1px}
-@media (prefers-color-scheme:dark){mark{background:rgba(250,204,21,.28)}}
-.more{display:block;margin:14px auto 30px;padding:10px 22px;font-size:14px;border:1px solid var(--border);
-  border-radius:12px;background:var(--card);color:var(--accent);cursor:pointer}
-.more:hover{border-color:var(--accent)}
-.empty{text-align:center;color:var(--muted);padding:40px 0;font-size:15px}
-footer{border-top:1px solid var(--border);margin-top:30px;padding:22px 0 30px;font-size:13px;color:var(--muted)}
-footer .fr{margin:6px 0}
-footer a{color:var(--accent);text-decoration:none}
-footer a:hover{text-decoration:underline}
-footer .disc{margin-top:10px;font-size:12px}
-.fab{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:6px;z-index:5}
-.fab button{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--card);
-  color:var(--muted);font-size:16px;cursor:pointer;box-shadow:var(--shadow)}
-.fab button:hover{color:var(--accent);border-color:var(--accent)}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);
-  background:var(--text);color:var(--bg);padding:9px 18px;border-radius:10px;font-size:13px;
-  opacity:0;transition:.25s;pointer-events:none;z-index:9}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-@media (max-width:640px){.controls{flex-direction:column}select{width:100%}}
+</script>
+
+<script>
+  (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+  m[i].l=1*new Date();
+  for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+  k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+  (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+  ym(105817342, "init", {
+    clickmap: true,
+    trackLinks: true,
+    accurateTrackBounce: true
+  });
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/105817342" style="position:absolute; left:-9999px;" alt=""></div></noscript>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-SM54ENZHYS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-SM54ENZHYS');
+</script>
+
+<script src="https://prog815.github.io/share.js?v=1.0.3" defer></script>
+
+<style>
+  :root{
+    --bg:#f5f7fb; --panel:#ffffff; --ink:#0f172a; --muted:#5b6b7f;
+    --line:#e2e8f0; --brand:#2563eb; --brand-d:#1d4ed8; --accent:#eff6ff;
+    --mark:#fef08a; --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+    --radius:16px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --od:#7c3aed; --od-bg:#f3e8ff;
+    --ok:#166534; --ok-bg:#dcfce7; --ok-bd:#bbf7d0;
+    --bad:#991b1b; --bad-bg:#fee2e2; --bad-bd:#fecaca;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#0b1120; --panel:#111a2c; --ink:#e6edf7; --muted:#94a3b8;
+      --line:#1e293b; --brand:#60a5fa; --brand-d:#3b82f6; --accent:rgba(96,165,250,.12);
+      --mark:#854d0e; --od:#a78bfa; --od-bg:rgba(167,139,250,.15);
+      --shadow:0 1px 2px rgba(0,0,0,.4);
+      --ok:#86efac; --ok-bg:rgba(22,101,52,.3); --ok-bd:rgba(22,101,52,.5);
+      --bad:#fca5a5; --bad-bg:rgba(153,27,27,.3); --bad-bd:rgba(153,27,27,.5);
+    }
+  }
+
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    -webkit-text-size-adjust:100%;
+  }
+  a{color:var(--brand); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .wrap{max-width:980px;margin:0 auto;padding:0 14px}
+
+  .klassik-banner{display:block;max-width:1200px;margin:0 auto;padding:8px 16px;text-decoration:none;opacity:.9}
+  .klassik-banner:hover{opacity:1}
+  .klassik-banner img{display:block;width:100%;height:auto}
+
+  header.hero{padding:16px 0 6px}
+  h1{font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
+  .sub{color:var(--muted);margin:0 0 12px;font-size:14px}
+
+  .search-container{padding:12px 0 8px;}
+  .searchbar{display:flex; gap:8px; align-items:stretch; flex-wrap:wrap;}
+  .searchbar input[type=text]{
+    flex:1; min-width:200px; font-size:16px; padding:12px 16px;
+    border:1px solid var(--line); border-radius:var(--radius);
+    background:var(--panel); color:var(--ink); outline:none;
+    transition:border-color .2s;
+  }
+  .searchbar input[type=text]:focus{border-color:var(--brand); box-shadow:0 0 0 3px var(--accent)}
+
+  .filters{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
+  .filters select{
+    font-size:14px; padding:10px 12px; border:1px solid var(--line);
+    border-radius:8px; background:var(--panel); color:var(--ink);
+    outline:none; cursor:pointer; flex:1; min-width:150px; max-width:300px;
+  }
+  .filters select:focus{border-color:var(--brand); box-shadow:0 0 0 3px var(--accent)}
+
+  .meta-line{
+    display:flex; justify-content:space-between; align-items:center;
+    margin:12px 2px 8px; font-size:13px; color:var(--muted);
+  }
+  .meta-line .count b{color:var(--ink)}
+  .meta-line .clear-link{color:var(--muted); text-decoration:underline dashed; cursor:pointer}
+  .meta-line .clear-link:hover{color:var(--brand)}
+
+  #status{
+    padding:48px 4px;
+    text-align:center;
+    color:var(--muted);
+    animation:fade-in .25s ease-out;
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  #status .spinner{
+    width:46px; height:46px; border-radius:50%;
+    border:3px solid var(--line);
+    border-top-color:var(--brand);
+    margin:0 auto 16px;
+    animation:spin .85s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #status .loading-text{
+    font-size:15px; font-weight:500; color:var(--ink);
+    margin-bottom:6px;
+  }
+  #status .loading-text .dots span{
+    display:inline-block; opacity:0;
+    animation:dot-pulse 1.4s infinite;
+  }
+  #status .loading-text .dots span:nth-child(2){ animation-delay:.2s; }
+  #status .loading-text .dots span:nth-child(3){ animation-delay:.4s; }
+  @keyframes dot-pulse {
+    0%, 60%, 100% { opacity: 0; }
+    30% { opacity: 1; }
+  }
+  #status .substatus{
+    font-size:12px; color:var(--muted);
+    margin-top:4px;
+  }
+  #status .err{color:#e11d48; font-weight:500;}
+
+  #results{display:flex; flex-direction:column; gap:12px; padding-bottom:8px}
+
+  .card{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); padding:16px;
+    box-shadow:var(--shadow); position:relative;
+    transition:border-color .2s;
+  }
+  .card:hover{border-color:var(--brand)}
+  .card.highlight{border-color:var(--brand); box-shadow:0 0 0 2px var(--accent), var(--shadow)}
+
+  .row1{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px}
+
+  .id-badge{
+    font-family:var(--mono); font-size:12px; font-weight:600;
+    background:var(--accent); color:var(--brand-d);
+    border:1px solid var(--line); border-radius:6px;
+    padding:2px 8px; cursor:pointer;
+  }
+  .id-badge:hover{border-color:var(--brand)}
+
+  .type-badge{
+    font-family:var(--mono); font-size:12px; font-weight:600;
+    background:var(--panel); color:var(--muted); border:1px solid var(--line);
+    border-radius:6px; padding:2px 8px;
+  }
+  .type-mfk{color:var(--brand-d); border-color:var(--accent)}
+  .type-mkk{color:var(--od); border-color:var(--od-bg)}
+
+  .status-badge{
+    font-size:11px; font-weight:600; border-radius:999px; padding:2px 10px;
+    border:1px solid transparent;
+  }
+  .status-active{background:var(--ok-bg); color:var(--ok); border-color:var(--ok-bd)}
+  .status-bad{background:var(--bad-bg); color:var(--bad); border-color:var(--bad-bd)}
+
+  .name{
+    font-size:18px; font-weight:600; line-height:1.4; margin-bottom:4px; color:var(--ink);
+  }
+  .short-name{
+    font-size:13px; color:var(--muted); margin-bottom:10px;
+  }
+
+  .details-grid{
+    display:grid; grid-template-columns:1fr; gap:6px; font-size:13px; margin-bottom:12px;
+  }
+  .details-grid .lbl{color:var(--muted)}
+  .details-grid .val{font-weight:500}
+
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin:4px 0}
+  .chip{
+    font-family:var(--mono); font-size:12px;
+    background:var(--bg); color:var(--ink);
+    border:1px solid var(--line); border-radius:6px;
+    padding:2px 8px; word-break:break-all;
+  }
+  .chip a{color:var(--brand); text-decoration:none}
+  .chip a:hover{text-decoration:underline}
+
+  .note-excl{
+    font-size:12.5px; color:var(--muted);
+    background:var(--bad-bg); border:1px solid var(--bad-bd);
+    border-radius:10px; padding:8px 12px; margin-top:10px;
+  }
+
+  mark{background:var(--mark); color:inherit; border-radius:2px; padding:0 1px}
+
+  .actions{
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+    padding-top:12px; border-top:1px dashed var(--line);
+  }
+  .action-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; font-weight:500; color:var(--muted);
+    background:transparent; border:1px solid transparent;
+    border-radius:6px; padding:4px 8px; cursor:pointer;
+    transition:all .2s; font-family:inherit;
+  }
+  .action-btn:hover{background:var(--accent); color:var(--brand-d); border-color:var(--accent)}
+
+  .share-slot{display:inline-flex}
+  .share-slot klassik-share{display:inline-flex; align-items:center}
+
+  .more{
+    display:block; width:100%; margin:16px 0; padding:14px;
+    font-size:14px; font-weight:600; border:1px solid var(--line);
+    border-radius:var(--radius); background:var(--panel);
+    color:var(--brand); cursor:pointer;
+  }
+  .more:hover{border-color:var(--brand); background:var(--accent)}
+  .more[hidden]{display:none!important}
+
+  footer{margin:40px 0; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:13px}
+  footer .stats{margin:0 0 4px; font-weight:500; color:var(--ink)}
+  footer .date-line{margin:0 0 16px; font-size:12px}
+  footer .links{display:flex; flex-direction:column; gap:12px}
+  footer .row-label{font-size:12px; color:var(--muted); margin-bottom:2px}
+  footer a{color:var(--brand)}
+
+  footer .disc{
+    font-size:12px; margin-top:16px; line-height:1.5;
+    background:var(--od-bg); border:1px solid rgba(124,58,237,.2);
+    border-radius:10px; padding:12px 14px; color:var(--ink);
+  }
+
+  .fab{
+    position:fixed; right:20px; width:44px; height:44px; border-radius:50%;
+    border:1px solid var(--line); background:var(--panel); color:var(--brand-d);
+    font-size:20px; cursor:pointer; box-shadow:var(--shadow);
+    display:none; align-items:center; justify-content:center; z-index:40;
+  }
+  .fab.up{bottom:80px} .fab.down{bottom:24px} .fab.show{display:flex}
+
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:99px;
+    font-size:13px; font-weight:500; opacity:0; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:60;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  .noscript-msg{
+    background:#fff3cd; color:#856404; padding:15px; border-radius:8px;
+    margin:20px 0; border:1px solid #ffeeba;
+  }
+
+  @media(max-width:640px){
+    .klassik-banner{padding:4px 8px}
+    .wrap{padding:0 12px}
+    .name{font-size:16px}
+    .searchbar input[type=text], .filters select{width:100%; max-width:none}
+  }
 </style>
 </head>
 <body>
-<a class="klassik-banner" href="https://prog815.github.io/" aria-label="Экосистема «Классик» — все справочники">
-  <img src="https://prog815.github.io/banner.svg?v=1.0.0" alt="Экосистема «Классик» — все справочники" width="1200" height="64">
+
+<a class="klassik-banner" href="https://prog815.github.io/" title="На главную — все справочники">
+  <img src="https://prog815.github.io/banner.svg?v=1.0.0" alt="Экосистема «Классик» — все справочники">
 </a>
+
 <div class="wrap">
-  <h1>Государственный реестр МФО</h1>
-  <p class="lead">Справочный снимок официального реестра Банка России о микрофинансовых и микрокредитных компаниях. Перед оформлением займа проверьте, числится ли компания в реестре и совпадает ли адрес сайта с указанным в реестре.</p>
+  <header class="hero">
+    <h1>Государственный реестр МФО</h1>
+    <p class="sub">Справочный снимок официального реестра Банка России о микрофинансовых и микрокредитных компаниях. Перед займом проверьте, числится ли компания в реестре и совпадает ли адрес сайта с указанным в реестре.</p>
+  </header>
 
-  <div class="controls">
-    <div class="search">
-      <input id="q" type="search" placeholder="Название, ИНН, ОГРН, рег. номер, домен, адрес, телефон…" autocomplete="off" aria-label="Поиск по реестру" title="Поиск по реквизитам: название, рег. номер, ИНН, ОГРН, адрес, сайт, телефон, email, даты. Вид и статус выбираются списками ниже">
-      <button class="x" id="qx" type="button" aria-label="Очистить поиск" title="Очистить строку поиска" hidden>✕</button>
+  <noscript>
+    <div class="noscript-msg">
+      Для работы поиска и отображения карточек необходим JavaScript.
     </div>
-    <select id="ftype" aria-label="Вид организации" title="Фильтр по виду микрофинансовой организации">
-      <option value="">Все виды</option>
-      <option value="МФК">МФК</option>
-      <option value="МКК">МКК</option>
-    </select>
-    <select id="fstatus" aria-label="Статус" title="Фильтр по статусу записи в реестре">
-      <option value="Действующая" selected>Действующие</option>
-      <option value="Исключённая">Исключённые</option>
-      <option value="">Все статусы</option>
-    </select>
+  </noscript>
+
+  <div class="search-container">
+    <div class="searchbar">
+      <input id="q" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Поиск по названию, ИНН, ОГРН, рег. номеру, домену, адресу или телефону..."
+             title="Поиск по реквизитам организации. Вид и статус выбираются списками ниже">
+    </div>
+    <div class="filters">
+      <select id="filter-type" aria-label="Фильтр по виду организации" title="Фильтр по виду микрофинансовой организации">
+        <option value="">Все виды</option>
+      </select>
+      <select id="filter-status" aria-label="Фильтр по статусу" title="Фильтр по статусу записи в реестре">
+        <option value="">Все статусы</option>
+      </select>
+    </div>
   </div>
 
-  <div class="statusline">
-    <span id="stat">Загрузка…</span>
-    <a id="clear" title="Сбросить поиск и фильтры к значению по умолчанию" hidden>Очистить</a>
+  <div class="meta-line">
+    <div class="count" id="count">Загрузка...</div>
+    <div class="clear-link" id="clear-all" style="display:none" title="Сбросить поиск и фильтры к значению по умолчанию">Очистить</div>
   </div>
 
-  <div class="spinner" id="spinner">
-    <span class="dot"></span>
-    <div class="ph" id="phase">Загрузка реестра МФО…</div>
-    <div class="ph">Файл ~770 КБ. Обычно менее секунды.</div>
+  <div id="status">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="loading-text">
+      <span id="loading-text">Загрузка реестра МФО</span><span class="dots"><span>.</span><span>.</span><span>.</span></span>
+    </div>
+    <div class="substatus">Файл ~770 КБ. Обычно менее секунды.</div>
   </div>
 
   <div id="results"></div>
-  <div class="empty" id="empty" hidden></div>
-  <button class="more" id="more" title="Показать следующую порцию карточек" hidden>Показать ещё</button>
+
+  <button class="more" id="more" hidden>Показать ещё</button>
+
+  <footer>
+    <p class="stats" id="footstats">Справочный снимок государственного реестра микрофинансовых организаций.</p>
+    <p class="date-line" id="footdate"></p>
+
+    <div class="links">
+      <div>
+        <div class="row-label">Источник данных (машиночитаемый снимок):</div>
+        <a href="https://www.cbr.ru/vfs/finmarkets/files/supervision/list_mfo.xlsx" target="_blank" rel="noopener">Банк России — Государственный реестр МФО (Excel)</a>
+      </div>
+      <div>
+        <div class="row-label">Первоисточники для сверки:</div>
+        <a href="https://www.cbr.ru/microfinance/registry/" target="_blank" rel="noopener">Официальный сайт Банка России</a> ·
+        <a href="https://github.com/prog815/mfo-registry#readme" target="_blank" rel="noopener" title="Исходный код и описание справочника">О справочнике</a>
+      </div>
+      <div>
+        <div class="row-label">Экосистема проектов:</div>
+        <a href="https://prog815.github.io/" title="Перейти на центральный хаб «Классик»">Центральный хаб «Классик»</a>
+      </div>
+      <div>
+        <div class="row-label">Обсуждение проекта и обратная связь:</div>
+        <a href="https://m.vk.ru/alekseyenin" target="_blank" rel="me noopener">ВКонтакте</a> ·
+        <a href="https://t.me/AlekseyEnin" target="_blank" rel="me noopener">Telegram</a> ·
+        <a href="https://max.ru/channel_prog815" target="_blank" rel="me noopener">MAX</a> ·
+        <a href="https://www.linkedin.com/in/eavprog/" target="_blank" rel="me noopener">LinkedIn</a>
+      </div>
+    </div>
+
+    <p class="disc">
+      Данные предоставляются как есть, на дату снимка.
+      Отсутствие организации в выгрузке не подтверждает её исключение из реестра.<br><br>
+      Справочный снимок официального реестра. Данные обновляются ежедневно.
+    </p>
+  </footer>
 </div>
 
-<footer>
-  <div class="wrap">
-    <div class="fr"><b>Справочный снимок государственного реестра МФО.</b> Данные обновляются ежедневно. Дата актуальности выгрузки: <span id="adate">…</span>.</div>
-    <div class="fr">Источник данных (машиночитаемый снимок):
-      <a href="https://www.cbr.ru/vfs/finmarkets/files/supervision/list_mfo.xlsx" target="_blank" rel="noopener">Банк России — Государственный реестр МФО (Excel)</a>
-    </div>
-    <div class="fr">Первоисточники для сверки:
-      <a href="https://www.cbr.ru/microfinance/registry/" target="_blank" rel="noopener">Официальный сайт Банка России</a>
-      · <a href="https://github.com/prog815/mfo-registry#readme" target="_blank" rel="noopener">О справочнике</a>
-    </div>
-    <div class="fr">Экосистема проектов:
-      <a href="https://prog815.github.io/">Центральный хаб «Классик»</a>
-    </div>
-    <div class="fr">Обсуждение и обратная связь:
-      <a href="https://m.vk.ru/alekseyenin" rel="me noopener" target="_blank">ВКонтакте</a> ·
-      <a href="https://t.me/AlekseyEnin" rel="me noopener" target="_blank">Telegram</a> ·
-      <a href="https://max.ru/channel_prog815" rel="me noopener" target="_blank">MAX</a> ·
-      <a href="https://www.linkedin.com/in/eavprog/" rel="me noopener" target="_blank">LinkedIn</a>
-    </div>
-    <div class="fr disc">Данные предоставляются как есть, на дату снимка. Отсутствие организации в выгрузке не подтверждает её исключение из реестра. Не заменяет официальные публикации Банка России.</div>
-  </div>
-</footer>
-
-<div class="fab">
-  <button id="up" type="button" title="Прокрутить страницу в начало" aria-label="В начало страницы">↑</button>
-  <button id="dn" type="button" title="Прокрутить страницу в конец" aria-label="В конец страницы">↓</button>
-</div>
+<button class="fab up" id="fabUp" title="Прокрутить страницу в начало">↑</button>
+<button class="fab down" id="fabDown" title="Прокрутить страницу в конец">↓</button>
 <div class="toast" id="toast">Скопировано</div>
 
 <script>
 (function(){
-"use strict";
-const PAGE=20;
-let DATA=[],REGMAP={},META=null,ACT='—',shown=PAGE,deepCode='';
-const $=id=>document.getElementById(id);
-const q=$('q'),ftype=$('ftype'),fstatus=$('fstatus'),results=$('results'),
-      stat=$('stat'),more=$('more'),empty=$('empty'),clear=$('clear'),qx=$('qx');
+  "use strict";
 
-/* ── загрузка .json.gz ── */
-async function loadGz(url,phase){
-  $('phase').textContent=phase;
-  const r=await fetch(url);
-  if(!r.ok) throw new Error(url+' → HTTP '+r.status);
-  const ds=new DecompressionStream('gzip');
-  const buf=await new Response(r.body.pipeThrough(ds)).arrayBuffer();
-  return JSON.parse(new TextDecoder('utf-8').decode(buf));
-}
+  var PAGE = 20;
+  var DATA = [];
+  var META = null;
+  var ACT_DATE = '—';
+  var activeDeepLinkCode = null;
+  var view = { list: [], shown: 0 };
+  var loadingInterval = null;
 
-/* ── поисковая строка: ТОЛЬКО реквизиты (вид/статус — прерогатива списков) ── */
-function prep(rec){
-  rec._h=[rec['Полное наименование'],rec['Сокращённое наименование'],rec['Рег. Номер'],
-    rec['ИНН'],rec['ОГРН'],rec['Адрес'],
-    rec['Дата внесения'],rec['Дата исключения'],
-    rec['Домены'].join(' '),rec['Сайты'].join(' '),
-    rec['Email'].join(' '),rec['Телефоны'].join(' ')].join(' ').toLowerCase();
-  return rec;
-}
-
-function tokens(){return q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);}
-function filtered(){
-  const toks=tokens(),t=ftype.value,s=fstatus.value;
-  return DATA.filter(r=>{
-    if(t&&r['Тип']!==t)return false;
-    if(s&&r['Статус']!==s)return false;
-    if(deepCode)return r['Рег. Номер']===deepCode;
-    return toks.every(k=>r._h.includes(k));
-  });
-}
-
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-function hl(text){
-  const toks=tokens();
-  let out=esc(text);
-  if(!toks.length||deepCode)return out;
-  toks.forEach(k=>{
-    const re=new RegExp('('+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
-    out=out.replace(re,'<mark>$1</mark>');
-  });
-  return out;
-}
-
-/* ── share-текст: ссылка второй строкой ── */
-function shareText(r){
-  const link='https://prog815.github.io/mfo-registry/?code='+encodeURIComponent(r['Рег. Номер']);
-  return [r['Полное наименование']+(r['Сокращённое наименование']?' ('+r['Сокращённое наименование']+')':''),
-    link,
-    'Рег. номер: '+r['Рег. Номер'],
-    'Статус: '+r['Статус']+' · '+r['Тип'],
-    'ИНН: '+r['ИНН']+' · ОГРН: '+r['ОГРН'],
-    r['Сайты'].length?'Сайты: '+r['Сайты'].join(', '):'',
-    'Дата внесения: '+r['Дата внесения'],
-    'Источник: Банк России, выгрузка на '+ACT].filter(Boolean).join('\n');
-}
-
-/* ── toast ── */
-let tt;
-function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');
-  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800);}
-
-/* ── Поделиться: контракт экосистемы.
-     Кнопка живёт ВНУТРИ компонента хаба <klassik-share>:
-     url="" передаётся атрибутом, текст — атрибутом text (ссылка второй строкой).
-     bindShareButtons() после каждого рендера освежает text и дожидается
-     определения компонента, если share.js ещё не выполнился. ── */
-function bindShareButtons(){
-  const els=results.querySelectorAll('klassik-share');
-  const setText=el=>{
-    const rec=REGMAP[el.dataset.reg];
-    if(rec) el.setAttribute('text',shareText(rec));
+  var els = {
+    q: document.getElementById('q'),
+    filterType: document.getElementById('filter-type'),
+    filterStatus: document.getElementById('filter-status'),
+    clearAll: document.getElementById('clear-all'),
+    count: document.getElementById('count'),
+    status: document.getElementById('status'),
+    loadingText: document.getElementById('loading-text'),
+    results: document.getElementById('results'),
+    more: document.getElementById('more'),
+    footstats: document.getElementById('footstats'),
+    footdate: document.getElementById('footdate'),
+    fabUp: document.getElementById('fabUp'),
+    fabDown: document.getElementById('fabDown'),
+    toast: document.getElementById('toast')
   };
-  els.forEach(setText);
-  if(!customElements.get('klassik-share')){
-    customElements.whenDefined('klassik-share').then(()=>els.forEach(setText));
+
+  var LOADING_PHASES = [
+    'Загрузка реестра МФО',
+    'Распаковка данных',
+    'Подготовка справочника'
+  ];
+  var loadingIdx = 0;
+
+  function startLoadingTicker(){
+    stopLoadingTicker();
+    loadingInterval = setInterval(function(){
+      if(!els.loadingText || !els.loadingText.isConnected){
+        stopLoadingTicker();
+        return;
+      }
+      loadingIdx = (loadingIdx + 1) % LOADING_PHASES.length;
+      els.loadingText.textContent = LOADING_PHASES[loadingIdx];
+    }, 1500);
   }
-}
-
-/* ── карточка: title-подсказка над каждым элементом ── */
-function card(r){
-  const tb=r['Тип']==='МФК'?'badge--mfk':'badge--mkk';
-  const sb=r['Статус']==='Действующая'?'badge--ok':'badge--bad';
-  const dom=r['Домены'].map(d=>'<span class="chip" title="Домен официального сайта — по нему работает поиск">'+hl(d)+'</span>').join('');
-  const sites=r['Сайты'].map(s=>{
-    const href=/^https?:\/\//.test(s)?s:'https://'+s.replace(/^\/+/,'');
-    return '<span class="chip" title="Официальный сайт организации (откроется в новой вкладке)"><a href="'+esc(href)+'" target="_blank" rel="noopener nofollow">'+hl(s)+'</a></span>';
-  }).join('');
-  return '<article class="card'+(r['Рег. Номер']===deepCode?' highlight':'')+'" data-reg="'+esc(r['Рег. Номер'])+'">'
-    +'<div class="card__top">'
-      +'<span class="code" title="Регистрационный номер записи в реестре ЦБ РФ — нажмите, чтобы скопировать">'+esc(r['Рег. Номер'])+'</span>'
-      +'<span class="badge '+sb+'" title="Статус записи по выгрузке ЦБ РФ от '+esc(ACT)+'">'+esc(r['Статус'])+'</span>'
-      +(r['Тип']?'<span class="badge '+tb+'" title="Вид микрофинансовой организации по реестру ЦБ РФ">'+esc(r['Тип'])+'</span>':'')
-    +'</div>'
-    +'<h3 title="Полное наименование юридического лица">'+hl(r['Полное наименование'])
-      +(r['Сокращённое наименование']?'<span class="short" title="Сокращённое наименование">'+hl(r['Сокращённое наименование'])+'</span>':'')+'</h3>'
-    +'<div class="rows">'
-      +'<div class="row"><span title="Идентификационный номер налогоплательщика"><b>ИНН</b> '+hl(r['ИНН'])+'</span> · <span title="Основной государственный регистрационный номер"><b>ОГРН</b> '+hl(r['ОГРН'])+'</span></div>'
-      +(r['Дата внесения']?'<div class="row" title="Дата внесения сведений о юридическом лице в государственный реестр МФО"><b>Внесена в реестр:</b> '+hl(r['Дата внесения'])+'</div>':'')
-      +(r['Адрес']?'<div class="row" title="Адрес, указанный в едином государственном реестре юридических лиц"><b>Адрес:</b> '+hl(r['Адрес'])+'</div>':'')
-      +(sites?'<div class="chips">'+sites+'</div>':'')
-      +(dom?'<div class="row" title="Нормализованные домены официальных сайтов"><b>Домены:</b> '+dom+'</div>':'')
-      +(r['Телефоны'].length?'<div class="row" title="Номера контактных телефонов организации"><b>Телефон:</b> '+hl(r['Телефоны'].join(', '))+'</div>':'')
-      +(r['Email'].length?'<div class="row" title="Адреса электронной почты организации"><b>Email:</b> '+hl(r['Email'].join(', '))+'</div>':'')
-    +'</div>'
-    +(r['Статус']==='Исключённая'?'<div class="note-excl" title="Пояснение по исключённым записям">Организация исключена из реестра. Дата и причина исключения в выгрузке Банка России не указываются.</div>':'')
-    +'<div class="card__actions"><klassik-share url="" data-reg="'+esc(r['Рег. Номер'])+'" text="'+esc(shareText(r))+'" title="Поделиться карточкой организации">📤 Поделиться</klassik-share></div>'
-    +'</article>';
-}
-
-/* ── рендер + bindShareButtons после каждого рендера ── */
-function render(){
-  const list=filtered(),n=list.length;
-  shown=Math.min(Math.max(shown,PAGE),n);
-  results.innerHTML=list.slice(0,shown).map(card).join('');
-  bindShareButtons();
-  more.hidden=shown>=n;
-  more.textContent='Показать ещё +'+PAGE+' (показано '+shown+' из '+n+')';
-  clear.hidden=!(q.value||ftype.value||fstatus.value!=='Действующая'||deepCode);
-  qx.hidden=!q.value;
-  if(!n){
-    empty.hidden=false;
-    empty.textContent=deepCode
-      ?'Не найдено в выгрузке на '+ACT+'. Запись с рег. номером «'+deepCode+'» отсутствует.'
-      :'Не найдено в выгрузке на '+ACT+'.';
-    stat.textContent='Найдено: 0';
-  }else{
-    empty.hidden=true;
-    stat.textContent='Найдено: '+n+' · Показано: '+shown;
-  }
-  if(deepCode){history.replaceState(null,'',location.pathname);deepCode='';}
-}
-
-/* ── копирование рег. номера ── */
-results.addEventListener('click',e=>{
-  const c=e.target.closest('.code');
-  if(c){navigator.clipboard.writeText(c.textContent).then(()=>toast('Скопировано'));}
-});
-
-/* ── события поиска и фильтров ── */
-let deb;
-q.addEventListener('input',()=>{shown=PAGE;clearTimeout(deb);deb=setTimeout(render,180);});
-ftype.addEventListener('change',()=>{shown=PAGE;render();});
-fstatus.addEventListener('change',()=>{shown=PAGE;render();});
-more.addEventListener('click',()=>{shown+=PAGE;render();});
-clear.addEventListener('click',()=>{q.value='';ftype.value='';fstatus.value='Действующая';shown=PAGE;render();});
-qx.addEventListener('click',()=>{q.value='';shown=PAGE;render();q.focus();});
-
-/* ── ↑ / ↓: верх и низ страницы ── */
-$('up').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
-$('dn').addEventListener('click',()=>window.scrollTo({top:document.documentElement.scrollHeight,behavior:'smooth'}));
-
-/* ── старт ── */
-(async function(){
-  try{
-    deepCode=new URLSearchParams(location.search).get('code')||'';
-    [DATA,META]=await Promise.all([
-      loadGz('mfo.json.gz','Загрузка данных…'),
-      loadGz('mfo_meta.json.gz','Загрузка метаданных…').catch(()=>null)
-    ]);
-    DATA.forEach(prep);
-    REGMAP={};DATA.forEach(r=>{REGMAP[r['Рег. Номер']]=r;});
-    ACT=(META&&META.actualization_date)||'—';
-    $('adate').textContent=ACT;
-    $('spinner').hidden=true;
-    render();
-    if(!customElements.get('klassik-share')){
-      customElements.whenDefined('klassik-share').catch(()=>{});
-      setTimeout(()=>{
-        if(!customElements.get('klassik-share')){
-          stat.textContent+=' · библиотека «Поделиться» не загрузилась';
-        }
-      },3000);
+  function stopLoadingTicker(){
+    if(loadingInterval){
+      clearInterval(loadingInterval);
+      loadingInterval = null;
     }
-  }catch(err){
-    $('phase').textContent='Ошибка загрузки данных: '+err.message;
   }
-})();
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function normName(s){ return String(s == null ? '' : s).toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim(); }
+  function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+
+  function highlight(text, tokens){
+    if(!tokens || !tokens.length || !text) return esc(text);
+    var html = esc(text);
+    for(var i=0; i<tokens.length; i++){
+      var t = tokens[i];
+      if(!t) continue;
+      var re = new RegExp('(' + escRe(esc(t)) + ')', 'gi');
+      html = html.replace(re, '<mark>$1</mark>');
+    }
+    return html;
+  }
+
+  async function loadJsonGz(url){
+    var r = await fetch(url, { cache: 'no-cache' });
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    if(typeof DecompressionStream === 'undefined') throw new Error('DecompressionStream не поддерживается браузером');
+    var decompressed = r.body.pipeThrough(new DecompressionStream('gzip'));
+    var text = await new Response(decompressed).text();
+    return JSON.parse(text);
+  }
+
+  function syncCodeToUrl(code){
+    var url = new URL(window.location);
+    if(code) url.searchParams.set('code', code);
+    else url.searchParams.delete('code');
+    history.replaceState(null, '', url.toString());
+  }
+  function clearCodeFromUrl(){ syncCodeToUrl(null); }
+
+  function updateClearVisibility(){
+    var hasQuery = String(els.q.value || '').length > 0;
+    var hasType = els.filterType.value !== '';
+    var hasStatus = els.filterStatus.value !== 'Действующая';
+    var hasCode = !!activeDeepLinkCode;
+    els.clearAll.style.display = (hasQuery || hasType || hasStatus || hasCode) ? 'block' : 'none';
+  }
+
+  async function boot(){
+    try{
+      startLoadingTicker();
+
+      var base = location.pathname.replace(/index\.html$/, '');
+      if(base.charAt(base.length - 1) !== '/') base += '/';
+
+      var raw = await loadJsonGz(base + 'mfo.json.gz');
+      META = await loadJsonGz(base + 'mfo_meta.json.gz');
+
+      if(!Array.isArray(raw)) throw new Error('bad data shape');
+
+      DATA = raw.map(function(it){
+        var sites = Array.isArray(it['Сайты']) ? it['Сайты'] : [];
+        var domains = Array.isArray(it['Домены']) ? it['Домены'] : [];
+        var phones = Array.isArray(it['Телефоны']) ? it['Телефоны'] : [];
+        var emails = Array.isArray(it['Email']) ? it['Email'] : [];
+        return {
+          reg_num: String(it['Рег. Номер'] || '').trim(),
+          status: String(it['Статус'] || '').trim(),
+          type: String(it['Тип'] || '').trim(),
+          vid: String(it['Вид'] || '').trim(),
+          date_in: String(it['Дата внесения'] || '').trim(),
+          ogrn: String(it['ОГРН'] || '').trim(),
+          inn: String(it['ИНН'] || '').trim(),
+          name: String(it['Полное наименование'] || '').trim(),
+          short_name: String(it['Сокращённое наименование'] || '').trim(),
+          address: String(it['Адрес'] || '').trim(),
+          sites: sites,
+          domains: domains,
+          phones: phones,
+          emails: emails
+        };
+      });
+
+      if(META){
+        ACT_DATE = META.actualization_date || '—';
+        els.footstats.textContent = 'В справочнике ' + fmt(META.records_count) + ' записей.';
+        els.footdate.textContent = 'Данные актуальны на: ' + ACT_DATE;
+
+        var types = new Set();
+        var statuses = new Set();
+        DATA.forEach(function(r){
+          if(r.type) types.add(r.type);
+          if(r.status) statuses.add(r.status);
+        });
+
+        Array.from(types).sort().forEach(function(s){
+          var opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          els.filterType.appendChild(opt);
+        });
+
+        Array.from(statuses).sort().forEach(function(s){
+          var opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          els.filterStatus.appendChild(opt);
+        });
+
+        // Дефолт: только действующие
+        if(Array.from(statuses).indexOf('Действующая') !== -1){
+          els.filterStatus.value = 'Действующая';
+        }
+      }
+
+      stopLoadingTicker();
+      els.status.style.display = 'none';
+
+      var urlParams = new URLSearchParams(window.location.search);
+      var codeParam = urlParams.get('code');
+      if(codeParam){
+        var found = DATA.find(function(r){ return r.reg_num === codeParam; });
+        if(found){
+          activeDeepLinkCode = codeParam;
+          els.filterType.value = '';
+          els.filterStatus.value = '';
+        } else {
+          els.q.value = codeParam;
+        }
+      }
+
+      runSearch();
+    }catch(err){
+      console.error(err);
+      stopLoadingTicker();
+      els.status.innerHTML = '<div class="err">Ошибка загрузки: ' + esc(err.message) + '</div>' +
+        '<div style="margin-top:12px"><button class="action-btn" onclick="location.reload()">Повторить</button></div>';
+    }
+  }
+
+  function runSearch(){
+    if(activeDeepLinkCode){
+      var one = DATA.find(function(r){ return r.reg_num === activeDeepLinkCode; });
+      view.list = one ? [one] : [];
+      view.shown = 0;
+      els.results.innerHTML = '';
+      renderCount();
+      renderMore();
+      appendPage();
+      updateClearVisibility();
+      return;
+    }
+
+    var query = normName(els.q.value);
+    var tokens = query.split(' ').filter(Boolean);
+    var selType = els.filterType.value;
+    var selStatus = els.filterStatus.value;
+
+    view.list = DATA.filter(function(r){
+      if(tokens.length > 0){
+        var blob = normName([
+          r.reg_num, r.name, r.short_name, r.inn, r.ogrn, r.address,
+          r.sites.join(' '), r.domains.join(' '),
+          r.phones.join(' '), r.emails.join(' '),
+          r.date_in
+        ].join(' '));
+        for(var i=0; i<tokens.length; i++){
+          if(blob.indexOf(tokens[i]) === -1) return false;
+        }
+      }
+      if(selType && r.type !== selType) return false;
+      if(selStatus && r.status !== selStatus) return false;
+      return true;
+    });
+
+    view.shown = 0;
+    els.results.innerHTML = '';
+    renderCount();
+    renderMore();
+    appendPage();
+    updateClearVisibility();
+  }
+
+  function renderCount(){
+    var total = view.list.length;
+    var shown = Math.min(view.shown, total);
+    els.count.innerHTML = 'Найдено: <b>' + fmt(total) + '</b> · Показано: <b>' + fmt(shown) + '</b>';
+  }
+
+  function renderMore(){
+    var total = view.list.length;
+    var shown = Math.min(view.shown, total);
+    if(shown >= total || total === 0){
+      els.more.hidden = true;
+    } else {
+      els.more.hidden = false;
+      els.more.textContent = 'Показать ещё +' + PAGE + ' (показано ' + fmt(shown) + ' из ' + fmt(total) + ')';
+    }
+  }
+
+  function appendPage(){
+    var total = view.list.length;
+    if(total === 0){
+      if(activeDeepLinkCode){
+        els.results.innerHTML = '<div style="padding:32px 4px;text-align:center;color:var(--muted)">Не найдено в выгрузке на ' + esc(ACT_DATE) + '.<br>Запись с рег. номером «' + esc(activeDeepLinkCode) + '» отсутствует.<br><br>Нажмите «Очистить», чтобы увидеть весь реестр.</div>';
+      } else {
+        els.results.innerHTML = '<div style="padding:32px 4px;text-align:center;color:var(--muted)">Не найдено в выгрузке на ' + esc(ACT_DATE) + '.<br>Попробуйте изменить запрос или сбросить фильтры.</div>';
+      }
+      renderCount(); renderMore(); return;
+    }
+
+    var end = Math.min(view.shown + PAGE, total);
+    var html = [];
+    var queryTokens = els.q.value.trim().split(/\s+/).filter(Boolean);
+
+    for(var i=view.shown; i<end; i++){
+      html.push(cardHTML(view.list[i], queryTokens));
+    }
+    els.results.insertAdjacentHTML('beforeend', html.join(''));
+
+    bindShareButtons();
+
+    view.shown = end;
+    renderCount();
+    renderMore();
+  }
+
+  function bindShareButtons(){
+    if(!window.customElements || !customElements.get('klassik-share')){
+      return;
+    }
+    var slots = els.results.querySelectorAll('.share-slot');
+    for(var j=0; j<slots.length; j++){
+      var fallback = slots[j].querySelector('.btn-share-fallback');
+      if(!fallback) continue;
+
+      var shareText = slots[j].getAttribute('data-share-text');
+
+      var el = document.createElement('klassik-share');
+      el.setAttribute('catalog', 'mfo-registry');
+      el.setAttribute('title', 'Государственный реестр МФО');
+      el.setAttribute('text', shareText);
+      el.setAttribute('url', '');
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'action-btn';
+      btn.title = 'Поделиться этой записью';
+      btn.setAttribute('aria-label', 'Поделиться записью');
+      btn.textContent = '📤 Поделиться';
+
+      el.appendChild(btn);
+      slots[j].replaceChild(el, fallback);
+    }
+  }
+
+  if(window.customElements){
+    customElements.whenDefined('klassik-share').then(bindShareButtons);
+  }
+
+  function cardHTML(r, queryTokens){
+    var isHighlight = (r.reg_num === activeDeepLinkCode);
+
+    var nameHtml = highlight(r.name, queryTokens);
+    var idHtml = highlight(r.reg_num, queryTokens);
+
+    var shareUrl = window.location.origin + window.location.pathname + '?code=' + encodeURIComponent(r.reg_num);
+    var shareLines = [
+      r.name + (r.short_name ? ' (' + r.short_name + ')' : ''),
+      shareUrl,
+      'Рег. номер: ' + r.reg_num,
+      'Статус: ' + r.status + (r.type ? ' · ' + r.type : ''),
+      'ИНН: ' + r.inn + ' · ОГРН: ' + r.ogrn
+    ];
+    if(r.sites.length) shareLines.push('Сайты: ' + r.sites.join(', '));
+    if(r.date_in) shareLines.push('Дата внесения: ' + r.date_in);
+    shareLines.push('Источник: Банк России, выгрузка на ' + ACT_DATE);
+    var shareText = shareLines.join('\n');
+
+    var details = [];
+    details.push('<div title="Идентификационный номер налогоплательщика · Основной государственный регистрационный номер"><span class="lbl">ИНН:</span> <span class="val">' + highlight(r.inn, queryTokens) + '</span> · <span class="lbl">ОГРН:</span> <span class="val">' + highlight(r.ogrn, queryTokens) + '</span></div>');
+    if(r.date_in) details.push('<div title="Дата внесения сведений о юридическом лице в реестр"><span class="lbl">Внесена в реестр:</span> <span class="val">' + highlight(r.date_in, queryTokens) + '</span></div>');
+    if(r.address) details.push('<div title="Адрес, указанный в ЕГРЮЛ"><span class="lbl">Адрес:</span> <span class="val">' + highlight(r.address, queryTokens) + '</span></div>');
+    if(r.phones.length) details.push('<div title="Номера контактных телефонов"><span class="lbl">Телефон:</span> <span class="val">' + highlight(r.phones.join(', '), queryTokens) + '</span></div>');
+    if(r.emails.length) details.push('<div title="Адреса электронной почты"><span class="lbl">Email:</span> <span class="val">' + highlight(r.emails.join(', '), queryTokens) + '</span></div>');
+
+    var sitesHtml = '';
+    if(r.sites.length){
+      var chips = r.sites.map(function(s){
+        var href = /^https?:\/\//.test(s) ? s : 'https://' + s.replace(/^\/+/, '');
+        return '<span class="chip" title="Официальный сайт (откроется в новой вкладке)"><a href="' + esc(href) + '" target="_blank" rel="noopener nofollow">' + highlight(s, queryTokens) + '</a></span>';
+      }).join('');
+      sitesHtml = '<div title="Официальные сайты организации"><span class="lbl">Сайты:</span> <div class="chips">' + chips + '</div></div>';
+    }
+
+    var domainsHtml = '';
+    if(r.domains.length){
+      var dchips = r.domains.map(function(d){
+        return '<span class="chip" title="Домен официального сайта — по нему работает поиск">' + highlight(d, queryTokens) + '</span>';
+      }).join('');
+      domainsHtml = '<div title="Нормализованные домены официальных сайтов"><span class="lbl">Домены:</span> <div class="chips">' + dchips + '</div></div>';
+    }
+
+    var statusCls = r.status === 'Действующая' ? 'status-active' : 'status-bad';
+    var typeCls = r.type === 'МФК' ? 'type-mfk' : (r.type === 'МКК' ? 'type-mkk' : '');
+
+    var noteHtml = '';
+    if(r.status === 'Исключённая'){
+      noteHtml = '<div class="note-excl" title="Пояснение по исключённым записям">Организация исключена из реестра. Дата и причина исключения в выгрузке Банка России не указываются.</div>';
+    }
+
+    return '<article class="card' + (isHighlight ? ' highlight' : '') + '">' +
+      '<div class="row1">' +
+        '<span class="id-badge" data-id="' + esc(r.reg_num) + '" title="Регистрационный номер записи в реестре ЦБ РФ — нажмите, чтобы скопировать">Рег. № ' + idHtml + '</span>' +
+        '<span class="status-badge ' + statusCls + '" title="Статус записи по выгрузке ЦБ РФ от ' + esc(ACT_DATE) + '">' + esc(r.status) + '</span>' +
+        (r.type ? '<span class="type-badge ' + typeCls + '" title="Вид микрофинансовой организации по реестру ЦБ РФ">' + esc(r.type) + '</span>' : '') +
+      '</div>' +
+      '<div class="name" title="Полное наименование юридического лица">' + nameHtml + '</div>' +
+      (r.short_name ? '<div class="short-name" title="Сокращённое наименование">' + highlight(r.short_name, queryTokens) + '</div>' : '') +
+      '<div class="details-grid">' + details.join('') + sitesHtml + domainsHtml + '</div>' +
+      noteHtml +
+      '<div class="actions">' +
+        '<div class="share-slot" data-id="' + esc(r.reg_num) + '" data-share-text="' + esc(shareText) + '" title="Поделиться карточкой организации">' +
+          '<button type="button" class="action-btn btn-share-fallback" data-id="' + esc(r.reg_num) + '" title="Поделиться этой записью" aria-label="Поделиться записью">📤 Поделиться</button>' +
+        '</div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  var debTimer = null;
+  els.q.addEventListener('input', function(){
+    activeDeepLinkCode = null;
+    clearCodeFromUrl();
+    clearTimeout(debTimer);
+    debTimer = setTimeout(runSearch, 180);
+  });
+
+  els.filterType.addEventListener('change', function(){
+    activeDeepLinkCode = null;
+    clearCodeFromUrl();
+    runSearch();
+  });
+
+  els.filterStatus.addEventListener('change', function(){
+    activeDeepLinkCode = null;
+    clearCodeFromUrl();
+    runSearch();
+  });
+
+  function clearAllAction(){
+    els.q.value = '';
+    els.filterType.value = '';
+    els.filterStatus.value = 'Действующая';
+    activeDeepLinkCode = null;
+    clearCodeFromUrl();
+    runSearch();
+    els.q.focus();
+  }
+
+  els.clearAll.addEventListener('click', clearAllAction);
+  els.more.addEventListener('click', appendPage);
+
+  els.results.addEventListener('click', function(ev){
+    var idBadge = ev.target.closest('.id-badge');
+    if(idBadge){
+      var id = idBadge.getAttribute('data-id');
+      navigator.clipboard.writeText(id).then(function(){
+        showToast('Скопировано: ' + id);
+        try { if(window.ym) window.ym(105817342, 'reachGoal', 'mfo_copy_id'); } catch(e){}
+        try { if(window.gtag) window.gtag('event', 'copy_id', { id: id, registry: 'mfo' }); } catch(e){}
+      });
+      return;
+    }
+  });
+
+  var toastTimer = null;
+  function showToast(msg){
+    els.toast.textContent = msg;
+    els.toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ els.toast.classList.remove('show'); }, 1800);
+  }
+
+  function onScroll(){
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    els.fabUp.classList.toggle('show', y > 300);
+    els.fabDown.classList.toggle('show', y > 300 && y < max - 40);
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  els.fabUp.addEventListener('click', function(){ window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  els.fabDown.addEventListener('click', function(){ window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); });
+
+  boot();
 })();
 </script>
 </body>
